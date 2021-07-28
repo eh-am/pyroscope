@@ -62,12 +62,13 @@ func invalidateCookie(w http.ResponseWriter, name string) {
 
 func (ctrl *Controller) logoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "POST" && r.Method != "DELETE" {
-			ctrl.writeErrorMessage(w, http.StatusMethodNotAllowed, "only POST and DELETE are allowed")
-			return
+		switch r.Method {
+			case http.MethodPost, http.MethodGet:
+				invalidateCookie(w, jwtCookieName)
+				http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+			default:
+				ctrl.writeErrorMessage(w, http.StatusMethodNotAllowed, "only POST and DELETE methods are allowed")
 		}
-		invalidateCookie(w, jwtCookieName)
-		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 	}
 }
 
@@ -177,6 +178,7 @@ func (ctrl *Controller) decodeGoogleCallbackResponse(resp *http.Response) (strin
 	var userProfile callbackResponse
 	err := json.NewDecoder(resp.Body).Decode(&userProfile)
 	if err != nil {
+		ctrl.log.WithError(err).Error("") //add this
 		return "", err
 	}
 
@@ -194,6 +196,7 @@ func (ctrl *Controller) decodeGithubCallbackResponse(resp *http.Response) (strin
 	var userProfile callbackResponse
 	err := json.NewDecoder(resp.Body).Decode(&userProfile)
 	if err != nil {
+		ctrl.log.WithError(err).Error("Decoding Github Callback Response failed")
 		return "", err
 	}
 
@@ -211,6 +214,7 @@ func (ctrl *Controller) decodeGitLabCallbackResponse(resp *http.Response) (strin
 	var userProfile callbackResponse
 	err := json.NewDecoder(resp.Body).Decode(&userProfile)
 	if err != nil {
+		ctrl.log.WithError(err).Error("")
 		return "", nil
 	}
 

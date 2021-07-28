@@ -11,6 +11,13 @@ import (
 )
 
 func main() {
+	var err error
+	defer func(){
+		if err != nil {
+			os.Exit(1)
+		}
+	}()
+
 	var version string
 	flag.StringVar(&version, "version", "", "Version in semver format.")
 
@@ -22,16 +29,16 @@ func main() {
 	flag.Parse()
 
 	if version == "" {
-		fatalf("version is required")
+		err = fmt.Errorf("%s", "version is required")
 	}
 	version = strings.Trim(version, `"`)
 	v, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
-		fatalf("invalid version %q: %v", version, err)
+		err = fmt.Errorf("invalid version %q: %w", version, err)
 	}
 
 	if outputPath == "" {
-		fatalf("output path is required")
+		err = fmt.Errorf("%s", "output path is required")
 	}
 
 	versionInfo := goversioninfo.VersionInfo{
@@ -82,11 +89,6 @@ func main() {
 	versionInfo.Walk()
 
 	if err = versionInfo.WriteSyso(outputPath, "amd64"); err != nil {
-		fatalf("failed to write output file %s: %v", outputPath, err)
+		err = fmt.Errorf("failed to write output file %s: %w", outputPath, err)
 	}
-}
-
-func fatalf(format string, args ...interface{}) {
-	_, _ = fmt.Fprintf(os.Stderr, format+"\n", args...)
-	os.Exit(1)
 }

@@ -12,5 +12,9 @@ func (ctrl *Controller) configHandler(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write(configBytes)
+	_, err = w.Write(configBytes)
+	
+	if err != nil {
+		ctrl.log.WithError(err)
+	}
 }
