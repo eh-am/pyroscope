@@ -2082,7 +2082,7 @@
             "multi": false,
             "name": "instance",
             "options": [ ],
-            "query": "label_values(pyroscope_storage_cache_size, instance)",
+            "query": "label_values(pyroscope_build_info, instance)",
             "refresh": 0,
             "regex": "",
             "sort": 0,
