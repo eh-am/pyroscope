@@ -52,19 +52,51 @@ const arrayToTree = (nodesArray: TreeNode[], total: number): TreeNode => {
 };
 
 function dedupTree(node: TreeNode) {
-  const childrenMap: { [key: string]: TreeNode } = {};
+  //  const childrenMap: { [key: string]: TreeNode } = {};
+  const childrenMap = new Map<string, TreeNode>();
   for (let i = 0; i < node.children.length; i += 1) {
-    childrenMap[node.children[i].name] ||= node.children[i];
+    //    console.log(
+    //      'usando childrenMap[node.children[i].name]',
+    //      childrenMap[node.children[i].name],
+    //      'ou',
+    //      node.children[i]
+    //    );
+    if (!childrenMap.has(node.children[i].name)) {
+      childrenMap.set(node.children[i].name, node.children[i]);
+    }
   }
+
   for (let i = 0; i < node.children.length; i += 1) {
     const currentNode = node.children[i];
-    const existingNode = childrenMap[node.children[i].name];
-    if (existingNode !== currentNode) {
+    const existingNode = childrenMap.get(node.children[i].name);
+    if (existingNode && existingNode !== currentNode) {
+      if (!Array.isArray(existingNode.total)) {
+        console.log({
+          existingNode,
+        });
+        debugger;
+        //        break;
+        //        debugger;
+      }
+      //console.log({
+      //  existingNode: existingNode.total,
+      //  //        currentNode: currentNode.total,
+      //});
+
       existingNode.total[0] += currentNode.total[0];
       existingNode.self[0] += currentNode.self[0];
       existingNode.children = existingNode.children.concat(
         currentNode.children
       );
+
+      if (!Array.isArray(existingNode.total)) {
+        console.log({
+          existingNode,
+        });
+        throw new Error('should be an array');
+        //        break;
+        //        debugger;
+      }
     }
   }
   node.children = Object.values(childrenMap);
